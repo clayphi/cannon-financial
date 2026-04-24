@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Money Tracker 💰</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2ecc71;
+    --green-light: #a8f0c8;
+    --green-dark: #1a9c54;
+    --blue: #3498db;
+    --blue-light: #aed6f1;
+    --orange: #f39c12;
+    --orange-light: #fdebd0;
+    --red: #e74c3c;
+    --red-light: #fadbd8;
+    --purple: #9b59b6;
+    --purple-light: #e8daef;
+    --teal: #1abc9c;
+    --teal-light: #d1f2eb;
+    --pink: #e91e90;
+    --pink-light: #fce4ec;
+    --bg: #f0f4ff;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    --radius: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: clip;
+  }
+
+  /* Fun animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(46,204,113,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 80% 30%, rgba(52,152,219,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 50% 80%, rgba(155,89,182,0.08) 0%, transparent 40%),
+      radial-gradient(circle at 10% 70%, rgba(243,156,18,0.06) 0%, transparent 40%);
+    animation: bgFloat 20s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @keyframes bgFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(2%, 1%) rotate(1deg); }
+    66% { transform: translate(-1%, 2%) rotate(-1deg); }
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+    animation: dropIn 0.6s ease-out;
+  }
+
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .header h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--green), var(--blue), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  /* Summary Bar */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+    animation: slideUp 0.5s ease-out 0.2s both;
+  }
+
+  .summary-heading {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .summary-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .summary-card:hover { transform: translateY(-2px); }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .summary-card.income::before { background: linear-gradient(90deg, var(--green), var(--teal)); }
+  .summary-card.expenses::before { background: linear-gradient(90deg, var(--orange), var(--red)); }
+  .summary-card.balance::before { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+
+  .summary-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+
+  .summary-amount {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .summary-card.income .summary-amount { color: var(--green-dark); }
+  .summary-card.expenses .summary-amount { color: var(--red); }
+  .summary-card.balance .summary-amount { color: var(--blue); }
+  .summary-card.balance .summary-amount.negative { color: var(--red); }
+
+  /* Section */
+  .section {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.5s ease-out both;
+  }
+
+  .section:nth-child(3) { animation-delay: 0.3s; }
+  .section:nth-child(4) { animation-delay: 0.4s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .section-icon.green { background: var(--green-light); }
+  .section-icon.orange { background: var(--orange-light); }
+  .section-icon.blue { background: var(--blue-light); }
+
+  .section-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  /* Income Rows */
+  .income-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 110px;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    transition: background 0.2s;
+  }
+
+  .income-col-headers {
+    display: grid;
+    grid-template-columns: 1fr 140px 110px;
+    gap: 12px;
+    padding: 6px 16px;
+    margin-bottom: 4px;
+  }
+
+  .income-year-amount {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--green-dark);
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .income-row:hover { background: #f8f9ff; }
+
+  .income-row .label-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .income-row .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .income-row .label {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .income-row .sublabel {
+    font-size: 0.78rem;
+    color: var(--text-light);
+  }
+
+  /* Money Input */
+  .money-input-wrap {
+    position: relative;
+    width: 140px;
+  }
+
+  .money-input-wrap::before {
+    content: '$';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-light);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .money-input {
+    width: 100%;
+    padding: 10px 14px 10px 30px;
+    border: 2px solid #e8ecf4;
+    border-radius: 12px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fafbff;
+    -moz-appearance: textfield;
+  }
+
+  .money-input::-webkit-inner-spin-button,
+  .money-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .money-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(52,152,219,0.15);
+    background: #fff;
+  }
+
+  .money-input.green-focus:focus { border-color: var(--green); box-shadow: 0 0 0 4px rgba(46,204,113,0.15); }
+
+  /* Expense Category */
+  .expense-category {
+    margin-bottom: 20px;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 2px solid #f0f2f8;
+  }
+
+  .category-emoji { font-size: 1.2rem; }
+
+  .category-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    flex: 1;
+  }
+
+  .category-footer {
+    display: grid;
+    grid-template-columns: 1fr 140px 80px 140px 110px 110px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 8px;
+    margin-top: 4px;
+    border-top: 2px dashed #e8ecf4;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+  }
+
+  .footer-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+  }
+
+  .footer-total-month {
+    color: var(--text);
+    text-align: right;
+    padding-right: 8px;
+    font-size: 1rem;
+  }
+
+  .footer-his-month {
+    color: var(--red);
+    text-align: right;
+    padding-right: 8px;
+    font-size: 1rem;
+  }
+
+  .footer-total-year {
+    color: var(--orange);
+    text-align: right;
+    padding-right: 8px;
+    font-size: 0.95rem;
+  }
+
+  .footer-his-year {
+    color: var(--purple);
+    text-align: right;
+    padding-right: 8px;
+    font-size: 0.95rem;
+  }
+
+  /* Expense Row */
+  .expense-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 80px 140px 110px 110px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-radius: 12px;
+    transition: background 0.2s;
+  }
+
+  .expense-row:hover { background: #fef9f2; }
+
+  .expense-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  .share-label {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--purple);
+    background: var(--purple-light);
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+
+  .his-share-amount {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--red);
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .total-year-amount,
+  .his-year-amount {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-align: right;
+    padding-right: 8px;
+  }
+
+  .total-year-amount { color: var(--orange); }
+  .his-year-amount { color: var(--purple); }
+
+  /* Slider for share */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .share-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 60px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e8ecf4;
+    outline: none;
+    transition: background 0.2s;
+  }
+
+  .share-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--purple);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(155,89,182,0.3);
+    transition: transform 0.15s;
+  }
+
+  .share-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+  .share-pct {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--purple);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* Column headers */
+  .expense-col-headers {
+    display: grid;
+    grid-template-columns: 1fr 140px 80px 140px 110px 110px;
+    gap: 10px;
+    padding: 12px 8px;
+    margin-bottom: 4px;
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 5;
+    border-bottom: 2px solid #f0f2f8;
+  }
+
+  .col-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text);
+  }
+
+  .col-label.center { text-align: center; }
+  .col-label.right { text-align: right; padding-right: 8px; }
+
+  /* Add custom row */
+  .add-row-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px dashed #e8ecf4;
+  }
+
+  .add-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid #e8ecf4;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .add-input:focus { border-color: var(--teal); }
+
+  .add-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--teal), var(--green));
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+  }
+
+  .add-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,188,156,0.3); }
+  .add-btn:active { transform: translateY(0); }
+
+  /* Remove button */
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+  }
+
+  .remove-btn:hover { color: var(--red); background: var(--red-light); }
+
+  /* Visual bar */
+  .bar-section {
+    margin-top: 8px;
+  }
+
+  .bar-track {
+    height: 18px;
+    background: #f0f2f8;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+    border-radius: 10px;
+  }
+
+  .bar-fill.income { background: linear-gradient(90deg, var(--green), var(--teal)); }
+  .bar-fill.expense { background: linear-gradient(90deg, var(--orange), var(--red)); }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+
+  .bar-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .bar-label.green { color: var(--green-dark); }
+  .bar-label.red { color: var(--red); }
+
+  /* Reset button */
+  .reset-area {
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .reset-btn {
+    padding: 12px 32px;
+    border: 2px solid #e8ecf4;
+    border-radius: 14px;
+    background: white;
+    color: var(--text-light);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-light); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .summary-bar { grid-template-columns: 1fr; gap: 8px; }
+    .expense-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .expense-col-headers { display: none; }
+    .expense-row .expense-name { grid-column: 1 / -1; }
+    .money-input-wrap { width: 100%; }
+    .header h1 { font-size: 1.8rem; }
+    .section { padding: 18px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>💰 My Money Tracker</h1>
+    <p>See where every dollar goes!</p>
+  </div>
+
+  <!-- Summary: Per Month -->
+  <div class="summary-heading">Per Month</div>
+  <div class="summary-bar">
+    <div class="summary-card income">
+      <div class="summary-label">Total Income</div>
+      <div class="summary-amount" id="totalIncome">$0</div>
+    </div>
+    <div class="summary-card expenses">
+      <div class="summary-label">Total Expenses</div>
+      <div class="summary-amount" id="totalExpenses">$0</div>
+    </div>
+    <div class="summary-card balance">
+      <div class="summary-label">Remaining Balance / Savings</div>
+      <div class="summary-amount" id="totalBalance">$0</div>
+    </div>
+  </div>
+
+  <!-- Summary: Per Year -->
+  <div class="summary-heading">Per Year</div>
+  <div class="summary-bar">
+    <div class="summary-card income">
+      <div class="summary-label">Total Income</div>
+      <div class="summary-amount" id="totalIncomeYear">$0</div>
+    </div>
+    <div class="summary-card expenses">
+      <div class="summary-label">Total Expenses</div>
+      <div class="summary-amount" id="totalExpensesYear">$0</div>
+    </div>
+    <div class="summary-card balance">
+      <div class="summary-label">Remaining Balance / Savings</div>
+      <div class="summary-amount" id="totalBalanceYear">$0</div>
+    </div>
+  </div>
+
+  <!-- Visual Bar -->
+  <div class="section bar-section" style="padding:16px 24px;">
+    <div class="bar-track">
+      <div class="bar-fill income" id="incomeBar" style="width:50%"></div>
+      <div class="bar-fill expense" id="expenseBar" style="width:50%"></div>
+    </div>
+    <div class="bar-labels">
+      <span class="bar-label green" id="incPctLabel">Income 0%</span>
+      <span class="bar-label red" id="expPctLabel">Expenses 0%</span>
+    </div>
+  </div>
+
+  <!-- INCOME SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon green">💵</div>
+      <div class="section-title">Income (Money Coming In)</div>
+    </div>
+
+    <div class="income-col-headers">
+      <div class="col-label">Source</div>
+      <div class="col-label center">Amount / Month</div>
+      <div class="col-label right">Amount / Year</div>
+    </div>
+
+    <div class="income-row">
+      <div class="label-area">
+        <div class="dot" style="background:var(--green)"></div>
+        <div>
+          <div class="label">Mom's Contribution</div>
+          <div class="sublabel">Money from Mom at her house</div>
+        </div>
+      </div>
+      <div class="money-input-wrap">
+        <input type="number" class="money-input green-focus income-input" id="momContrib" min="0" step="1" value="0" placeholder="0">
+      </div>
+      <div class="income-year-amount" id="momContribYear">$0</div>
+    </div>
+
+    <div class="income-row">
+      <div class="label-area">
+        <div class="dot" style="background:var(--blue)"></div>
+        <div>
+          <div class="label">Dad Sends to Mom</div>
+          <div class="sublabel">Dad's contribution sent to Mom's house</div>
+        </div>
+      </div>
+      <div class="money-input-wrap">
+        <input type="number" class="money-input green-focus income-input" id="dadToMom" min="0" step="1" value="0" placeholder="0">
+      </div>
+      <div class="income-year-amount" id="dadToMomYear">$0</div>
+    </div>
+
+    <div class="income-row">
+      <div class="label-area">
+        <div class="dot" style="background:var(--purple)"></div>
+        <div>
+          <div class="label">Dad's Contribution</div>
+          <div class="sublabel">Money Dad spends at his house</div>
+        </div>
+      </div>
+      <div class="money-input-wrap">
+        <input type="number" class="money-input green-focus income-input" id="dadAtHis" min="0" step="1" value="0" placeholder="0">
+      </div>
+      <div class="income-year-amount" id="dadAtHisYear">$0</div>
+    </div>
+  </div>
+
+  <!-- EXPENSES SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon orange">🧾</div>
+      <div class="section-title">Expenses (Money Going Out)</div>
+    </div>
+
+    <div class="expense-col-headers">
+      <div class="col-label">Expense</div>
+      <div class="col-label center">Total / Month</div>
+      <div class="col-label center">His Share</div>
+      <div class="col-label right">His / Month</div>
+      <div class="col-label right">Total / Year</div>
+      <div class="col-label right">His / Year</div>
+    </div>
+
+    <div id="expenseList"></div>
+
+    <div class="add-row-area">
+      <input type="text" class="add-input" id="newExpenseName" placeholder="Add a new expense...">
+      <button class="add-btn" onclick="addCustomExpense()">+ Add</button>
+    </div>
+  </div>
+
+  <div class="reset-area">
+    <button class="reset-btn" onclick="resetAll()">🔄 Reset Everything</button>
+  </div>
+</div>
+
+<script>
+  // Default expense categories
+  const defaultExpenses = [
+    { cat: '🏠 Housing', items: [
+      { name: "Mom's Mortgage / Rent", total: 0, share: 25 },
+      { name: "Dad's Mortgage / Rent", total: 0, share: 25 },
+      { name: "Mom's Utilities & Internet", total: 0, share: 25 },
+      { name: "Dad's Utilities & Internet", total: 0, share: 25 },
+    ]},
+    { cat: '🍔 Food & Groceries', items: [
+      { name: 'Groceries', total: 0, share: 100 },
+      { name: 'Eating Out', total: 0, share: 100 },
+      { name: 'School Lunch', total: 0, share: 100 },
+    ]},
+    { cat: '🎮 Fun & Entertainment', items: [
+      { name: 'Games & Subscriptions', total: 0, share: 100 },
+      { name: 'Movies & Outings', total: 0, share: 100 },
+      { name: 'Hobbies', total: 0, share: 100 },
+    ]},
+    { cat: '⚽ Sports & Activities', items: [
+      { name: 'Sports Fees', total: 0, share: 100 },
+      { name: 'Equipment & Gear', total: 0, share: 100 },
+      { name: 'Lessons / Camps', total: 0, share: 100 },
+    ]},
+    { cat: '👕 Clothing & Personal', items: [
+      { name: 'Clothes & Shoes', total: 0, share: 100 },
+      { name: 'Haircuts & Personal Care', total: 0, share: 100 },
+    ]},
+    { cat: '📚 School & Education', items: [
+      { name: 'School Supplies', total: 0, share: 100 },
+      { name: 'Tutoring / Books', total: 0, share: 100 },
+    ]},
+    { cat: '🚗 Transportation', items: [
+      { name: 'Gas / Rides', total: 0, share: 50 },
+      { name: 'Car Insurance (share)', total: 0, share: 25 },
+    ]},
+    { cat: '🏥 Health', items: [
+      { name: 'Doctor / Dentist', total: 0, share: 100 },
+      { name: 'Medicine', total: 0, share: 100 },
+    ]},
+  ];
+
+  let expenses = JSON.parse(JSON.stringify(defaultExpenses));
+
+  // --- AUTO-SAVE / AUTO-LOAD ---
+  const STORAGE_KEY = 'myMoneyTracker_v1';
+
+  function saveData() {
+    try {
+      const data = {
+        income: {
+          momContrib: document.getElementById('momContrib').value,
+          dadToMom: document.getElementById('dadToMom').value,
+          dadAtHis: document.getElementById('dadAtHis').value,
+        },
+        expenses: expenses
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch(e) {}
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.income) {
+        document.getElementById('momContrib').value = data.income.momContrib || 0;
+        document.getElementById('dadToMom').value = data.income.dadToMom || 0;
+        document.getElementById('dadAtHis').value = data.income.dadAtHis || 0;
+      }
+      if (data.expenses && Array.isArray(data.expenses)) {
+        expenses = data.expenses;
+      }
+    } catch(e) {}
+  }
+
+  function fmt(n) {
+    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function getIncome() {
+    const v = id => parseFloat(document.getElementById(id).value) || 0;
+    return v('momContrib') + v('dadToMom') + v('dadAtHis');
+  }
+
+  function getTotalExpenses() {
+    let total = 0;
+    expenses.forEach(cat => {
+      cat.items.forEach(item => {
+        total += (item.total * item.share / 100);
+      });
+    });
+    return total;
+  }
+
+  function updateSummary() {
+    const v = id => parseFloat(document.getElementById(id).value) || 0;
+    document.getElementById('momContribYear').textContent = fmt(v('momContrib') * 12);
+    document.getElementById('dadToMomYear').textContent = fmt(v('dadToMom') * 12);
+    document.getElementById('dadAtHisYear').textContent = fmt(v('dadAtHis') * 12);
+
+    const inc = getIncome();
+    const exp = getTotalExpenses();
+    const bal = inc - exp;
+
+    document.getElementById('totalIncome').textContent = fmt(inc);
+    document.getElementById('totalExpenses').textContent = fmt(exp);
+    const balEl = document.getElementById('totalBalance');
+    balEl.textContent = (bal < 0 ? '-' : '') + fmt(bal);
+    balEl.className = 'summary-amount' + (bal < 0 ? ' negative' : '');
+
+    document.getElementById('totalIncomeYear').textContent = fmt(inc * 12);
+    document.getElementById('totalExpensesYear').textContent = fmt(exp * 12);
+    const balYearEl = document.getElementById('totalBalanceYear');
+    const balYear = bal * 12;
+    balYearEl.textContent = (balYear < 0 ? '-' : '') + fmt(balYear);
+    balYearEl.className = 'summary-amount' + (balYear < 0 ? ' negative' : '');
+
+    // Bar
+    const total = inc + exp || 1;
+    const incPct = (inc / total * 100);
+    const expPct = (exp / total * 100);
+    document.getElementById('incomeBar').style.width = incPct + '%';
+    document.getElementById('expenseBar').style.width = expPct + '%';
+    document.getElementById('incPctLabel').textContent = 'Income ' + Math.round(inc / (Math.max(inc, exp) || 1) * 100) + '%';
+    document.getElementById('expPctLabel').textContent = 'Expenses ' + Math.round(exp / (Math.max(inc, exp) || 1) * 100) + '%';
+  }
+
+  function renderExpenses() {
+    const container = document.getElementById('expenseList');
+    container.innerHTML = '';
+
+    expenses.forEach((cat, ci) => {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'expense-category';
+
+      const catParts = cat.cat.split(' ');
+      const catEmoji = catParts[0];
+      const catName = catParts.slice(1).join(' ');
+
+      catDiv.innerHTML = `
+        <div class="category-header">
+          <span class="category-emoji">${catEmoji}</span>
+          <span class="category-name">${catName}</span>
+        </div>
+      `;
+
+      cat.items.forEach((item, ii) => {
+        const row = document.createElement('div');
+        row.className = 'expense-row';
+        const hisAmt = item.total * item.share / 100;
+
+        row.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="remove-btn" onclick="removeExpense(${ci},${ii})" title="Remove">✕</button>
+            <span class="expense-name">${item.name}</span>
+          </div>
+          <div class="money-input-wrap">
+            <input type="number" class="money-input" min="0" step="1" value="${item.total || ''}" placeholder="0"
+              onchange="updateExpense(${ci},${ii},'total',this.value)"
+              oninput="updateExpense(${ci},${ii},'total',this.value)">
+          </div>
+          <div class="slider-wrap">
+            <input type="range" class="share-slider" min="0" max="100" step="5" value="${item.share}"
+              oninput="updateExpense(${ci},${ii},'share',this.value)">
+            <span class="share-pct">${item.share}%</span>
+          </div>
+          <div class="his-share-amount">${fmt(hisAmt)}</div>
+          <div class="total-year-amount">${fmt(item.total * 12)}</div>
+          <div class="his-year-amount">${fmt(hisAmt * 12)}</div>
+        `;
+
+        catDiv.appendChild(row);
+      });
+
+      const totMonth = cat.items.reduce((s, i) => s + i.total, 0);
+      const hisMonth = cat.items.reduce((s, i) => s + (i.total * i.share / 100), 0);
+      const footer = document.createElement('div');
+      footer.className = 'category-footer';
+      footer.innerHTML = `
+        <div class="footer-label">Category Total</div>
+        <div class="footer-total-month">${fmt(totMonth)}</div>
+        <div></div>
+        <div class="footer-his-month">${fmt(hisMonth)}</div>
+        <div class="footer-total-year">${fmt(totMonth * 12)}</div>
+        <div class="footer-his-year">${fmt(hisMonth * 12)}</div>
+      `;
+      catDiv.appendChild(footer);
+
+      container.appendChild(catDiv);
+    });
+
+    updateSummary();
+  }
+
+  function updateExpense(ci, ii, field, value) {
+    if (field === 'total') {
+      expenses[ci].items[ii].total = parseFloat(value) || 0;
+    } else {
+      expenses[ci].items[ii].share = parseInt(value) || 0;
+    }
+
+    // Update ONLY the affected numbers without rebuilding the DOM
+    const catDiv = document.getElementById('expenseList').children[ci];
+    if (!catDiv) return;
+
+    // Update category footer totals
+    const catTotMonth = expenses[ci].items.reduce((s, i) => s + i.total, 0);
+    const catHisMonth = expenses[ci].items.reduce((s, i) => s + (i.total * i.share / 100), 0);
+    const footer = catDiv.querySelector('.category-footer');
+    if (footer) {
+      footer.querySelector('.footer-total-month').textContent = fmt(catTotMonth);
+      footer.querySelector('.footer-his-month').textContent = fmt(catHisMonth);
+      footer.querySelector('.footer-total-year').textContent = fmt(catTotMonth * 12);
+      footer.querySelector('.footer-his-year').textContent = fmt(catHisMonth * 12);
+    }
+
+    // Update his-share amount and share % label in the row
+    const rows = catDiv.querySelectorAll('.expense-row');
+    const row = rows[ii];
+    if (row) {
+      const item = expenses[ci].items[ii];
+      const hisAmt = item.total * item.share / 100;
+      row.querySelector('.his-share-amount').textContent = fmt(hisAmt);
+      row.querySelector('.share-pct').textContent = item.share + '%';
+      row.querySelector('.total-year-amount').textContent = fmt(item.total * 12);
+      row.querySelector('.his-year-amount').textContent = fmt(hisAmt * 12);
+    }
+
+    updateSummary();
+    saveData();
+  }
+
+  function removeExpense(ci, ii) {
+    expenses[ci].items.splice(ii, 1);
+    if (expenses[ci].items.length === 0) expenses.splice(ci, 1);
+    renderExpenses();
+    saveData();
+  }
+
+  function addCustomExpense() {
+    const input = document.getElementById('newExpenseName');
+    const name = input.value.trim();
+    if (!name) return;
+
+    // Add to an "Other" category or create one
+    let otherCat = expenses.find(c => c.cat === '📌 Other');
+    if (!otherCat) {
+      otherCat = { cat: '📌 Other', items: [] };
+      expenses.push(otherCat);
+    }
+    otherCat.items.push({ name, total: 0, share: 100 });
+    input.value = '';
+    renderExpenses();
+    saveData();
+  }
+
+  document.getElementById('newExpenseName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCustomExpense();
+  });
+
+  function resetAll() {
+    if (!confirm('Reset everything to zero?')) return;
+    document.getElementById('momContrib').value = 0;
+    document.getElementById('dadToMom').value = 0;
+    document.getElementById('dadAtHis').value = 0;
+    expenses = JSON.parse(JSON.stringify(defaultExpenses));
+    renderExpenses();
+    saveData();
+  }
+
+  // Income listeners
+  document.querySelectorAll('.income-input').forEach(el => {
+    el.addEventListener('input', () => { updateSummary(); saveData(); });
+  });
+
+  // Init — load saved data, then render
+  loadData();
+  renderExpenses();
+</script>
+</body>
+</html>
